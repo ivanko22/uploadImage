@@ -9,7 +9,7 @@ const path = require('path');
 const accessToken = process.env.ACCESS_TOKEN;
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8080;
 
 const storage = new Storage();
 const bucket = storage.bucket('images');
@@ -17,20 +17,6 @@ const bucket = storage.bucket('images');
 const multerStorage = multer.memoryStorage();
 
 const upload = multer({ storage: multerStorage });
-
-// const multerStorage = multer.memoryStorage({
-//     destination: (req, file, cb) => {
-//         cb(null, 'uploads/');
-//     },
-//     filename: (req, file, cb) => {
-//         const ext = file.mimetype.substring(6);
-//         const name = path.basename(file.originalname, ext);
-//         const newFileName = `${name}-${Date.now()}.${ext}`;
-
-//         cb(null, newFileName);
-//     }
-// });
-
 
 const uploadToDropbox = async (filePath) => {
     const fileName = path.basename(filePath);
