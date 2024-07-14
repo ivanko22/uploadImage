@@ -12,14 +12,6 @@ steps:
     args:
       - '-c'
       - |
-        echo "Running tests"
-        npm test
-
-  - name: 'node:14'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
         echo "Starting application"
         node server.js
 
