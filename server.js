@@ -27,7 +27,6 @@ const uploadToDropbox = async (filePath) => {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/octet-stream',
         "Dropbox-API-Arg": JSON.stringify({
-            // path: `/${fileName}.${req.file.mimetype.substring(6)}`,
             path: `/${fileName}`,
             mode: 'add',
             autorename: false,
