@@ -23,5 +23,4 @@ steps:
         echo "Starting application"
         node server.js
 
-# Optionally, specify the timeout for the build
 timeout: '1200s'
