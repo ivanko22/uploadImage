@@ -1,0 +1,27 @@
+steps:
+  - name: 'node:14'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Installing dependencies"
+        npm install
+
+  - name: 'node:14'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Running tests"
+        npm test
+
+  - name: 'node:14'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Starting application"
+        node server.js
+
+# Optionally, specify the timeout for the build
+timeout: '1200s'
