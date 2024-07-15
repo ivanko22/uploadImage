@@ -45,7 +45,13 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-    console.log('Received a POST request on /upload');
+    if (!req.file) {
+        console.error('No file uploaded');
+        return res.status(400).json({ error: 'File is required' });
+      }
+  
+      // Log the request file information for debugging purposes
+    console.log('Received file:', req.file);
 
     const uploadDir = path.join(__dirname, 'uploads');
     if (!fs.existsSync(uploadDir)) {
