@@ -1,12 +1,10 @@
 const express = require('express');
-require('dotenv').config();
-const multer = require('multer');
-const axios = require('axios');
+const Busboy = require('busboy');
 const stream = require('stream');
+const axios = require('axios');
+require('dotenv').config();
 
 const accessToken = process.env.ACCESS_TOKEN;
-console.log('ACCESS_TOKEN:', accessToken);
-
 if (!accessToken) {
     console.error('ACCESS_TOKEN is required');
     process.exit(1);
@@ -15,13 +13,7 @@ if (!accessToken) {
 const app = express();
 const port = process.env.PORT || 8080;
 
-// Set up multer to handle file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
 const uploadToDropbox = async (fileStream, fileName) => {
-    console.log('Uploading file to Dropbox:', fileName);
-
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
         'Authorization': `Bearer ${accessToken}`,
@@ -36,7 +28,6 @@ const uploadToDropbox = async (fileStream, fileName) => {
 
     try {
         const response = await axios.post(url, fileStream, { headers });
-        console.log('File uploaded to Dropbox:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error uploading file to Dropbox:', error);
@@ -44,27 +35,31 @@ const uploadToDropbox = async (fileStream, fileName) => {
     }
 };
 
-app.post('/upload', upload.single('file'), async (req, res) => {
-    console.log('Received file:', req.file);
+app.post('/upload', (req, res) => {
+    const busboy = new Busboy({ headers: req.headers });
+    let fileBuffer = Buffer.alloc(0);
+    let fileName = '';
 
-    if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(404).send('No file uploaded');
-    }
+    busboy.on('file', (fieldname, file, filename) => {
+        fileName = filename;
+        file.on('data', (data) => {
+            fileBuffer = Buffer.concat([fileBuffer, data]);
+        });
+    });
 
-    try {
-        const fileName = req.file.originalname;
-        const fileStream = new stream.PassThrough();
-        fileStream.end(req.file.buffer);
+    busboy.on('finish', async () => {
+        try {
+            const fileStream = new stream.PassThrough();
+            fileStream.end(fileBuffer);
 
-        console.log('Uploading file to Dropbox:', fileName);
+            const dropboxResponse = await uploadToDropbox(fileStream, fileName);
+            res.status(200).send(dropboxResponse);
+        } catch (error) {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
 
-        const dropboxResponse = await uploadToDropbox(fileStream, fileName);
-        res.status(200).send(dropboxResponse);
-    } catch (error) {
-        console.error('Error during upload process:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    req.pipe(busboy);
 });
 
 app.get('/', (req, res) => {
@@ -72,5 +67,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Server listening at http://localhost:${port}`);
 });
