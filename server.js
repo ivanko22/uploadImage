@@ -22,10 +22,17 @@ const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
 
 const uploadToDropbox = async (filePath) => {
-    console.log('Uploading file to Dropbox:', filePath);
+    console.log('uploadToDropbox file to Dropbox:', filePath);
 
     const fileName = path.basename(`${filePath}.jpg`);
     const fileData = fs.readFileSync(filePath);
+
+    try {
+        fileData = fs.readFileSync(filePath);
+    } catch (readError) {
+        console.error('Error reading file:', readError);
+        throw readError;
+    }
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
@@ -62,16 +69,16 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir);
         }
-        
+        // Save the file to the temp directory
         fs.writeFileSync(tempFilePath, req.file.buffer);
 
-        console.log('Uploading file to Dropbox:', tempFilePath);
+        console.log('tempFilePath', tempFilePath);
 
-        const response = await uploadToDropbox(tempFilePath);
-        res.send(response);
+        const dropboxResponse = await uploadToDropbox(tempFilePath);
+        res.status(200).send(dropboxResponse);
     } catch (error) {
-        console.error('Error during upload:', error);
-        res.status(500).json({ error: 'Failed to upload file to Dropbox' });
+        console.error('Error during upload process:', error);
+        res.status(500).json({ error: 'Internal server erro' });
     }finally{
         if(fs.existsSync(tempFilePath)){
             try{
