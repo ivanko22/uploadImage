@@ -48,18 +48,18 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-    const tempdDir = path.join(__dirname, 'temp');
+    const tempDir = path.join(__dirname, 'temp');
     const tempFilePath = path.join(tempDir, req.file.originalname);
 
     console.log('Received file:', req.file);
-    console.log('File saved to:', tempdDir, tempFilePath);
+    console.log('File saved to:', tempDir, tempFilePath);
 
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
         console.log('filePath:', tempFilePath);
 
-        if (!fs.existsSync(tempdDir)) {
-            fs.mkdirSync(tempdDir);
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
         }
         
         fs.writeFileSync(tempFilePath, req.file.buffer);
@@ -70,8 +70,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         console.error('Error during upload:', error);
         res.status(500).json({ error: error.message });
     }finally{
-        fs.unlinkSync(tempFilePath);
+        if(fs.existsSync(tempFilePath)){
+            fs.unlinkSync(tempFilePath)
         }
+    }
     });
 
 app.get('/', (req, res) => {
