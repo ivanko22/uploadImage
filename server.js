@@ -1,5 +1,4 @@
 const express = require('express');
-// const { Storage } = require('@google-cloud/storage');
 require('dotenv').config();
 const multer = require('multer');
 const axios = require('axios');
@@ -15,9 +14,6 @@ if(!accessToken){
 
 const app = express();
 const port = process.env.PORT || 8080;
-
-// const storage = new Storage();
-// const bucket = storage.bucket('images');
 
 const multerStorage = multer.memoryStorage();
 
@@ -58,14 +54,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     console.log('Received file:', req.file);
     console.log('File saved to:', tempdDir, tempFilePath);
 
-    // if (!req.file) {
-    //     console.error('No file uploaded');
-    //     return res.status(400).json({ error: 'File is required' });
-    //   }
-  
-    // const uploadDir = path.join(__dirname, 'uploads');
-    // const filePath = path.join(uploadDir, req.file.originalname);
-
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
         console.log('filePath:', tempFilePath);
@@ -80,10 +68,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         res.send(response);
     } catch (error) {
         console.error('Error during upload:', error);
-
         res.status(500).json({ error: error.message });
     }finally{
-        fs.unlinkSync(filePath);
+        fs.unlinkSync(tempFilePath);
         }
     });
 
