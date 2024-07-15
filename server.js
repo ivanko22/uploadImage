@@ -4,10 +4,8 @@ const multer = require('multer');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const e = require('express');
 
 const accessToken = process.env.ACCESS_TOKEN;
-
 console.log('ACCESS_TOKEN:', accessToken);
 
 if(!accessToken){
@@ -72,24 +70,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         }
         // Save the file to the temp directory
         fs.writeFileSync(tempFilePath, req.file.buffer);
-
         console.log('tempFilePath', tempFilePath);
 
         const dropboxResponse = await uploadToDropbox(tempFilePath);
         res.status(200).send(dropboxResponse);
     } catch (error) {
         console.error('Error during upload process:', error);
-        res.status(500).json({ error: 'Internal server erro' });
+        res.status(500).json({ error: 'Internal server error' });
     }finally{
         if(fs.existsSync(tempFilePath)){
             try{
             fs.unlinkSync(tempFilePath)
-        }catch(unlinkError){
-            console.error('Error deleting file:', unlinkError);
+            }catch(unlinkError){
+                console.error('Error deleting file:', unlinkError);
+            }
         }
     }
     }
-    });
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
