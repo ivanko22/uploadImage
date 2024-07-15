@@ -21,18 +21,20 @@ const multerStorage = multer.memoryStorage();
 
 const upload = multer({ storage: multerStorage });
 
+
+
 const uploadToDropbox = async (filePath) => {
     console.log('uploadToDropbox file to Dropbox:', filePath);
 
     const fileName = path.basename(`${filePath}.jpg`);
     const fileData = fs.readFileSync(filePath);
 
-    try {
-        fileData = fs.readFileSync(filePath);
-    } catch (readError) {
-        console.error('Error reading file:', readError);
-        throw readError;
-    }
+    // try {
+    //     fileData = fs.readFileSync(filePath);
+    // } catch (readError) {
+    //     console.error(`Error reading file at ${filePath}:`, readError); 
+    //     throw readError;
+    // }
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
