@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const multer = require('multer');
 const axios = require('axios');
+const fs = require('fs');
 const path = require('path');
 
 const accessToken = process.env.ACCESS_TOKEN;
@@ -67,9 +68,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
 
         const fileName = req.file.originalname;
-        const fileBuffer = req.file.buffer;
+        const fileBuffer = fs.readFileSync(req.file.path);
 
-        console.log('Uploading file to Dropbox:', fileName, fileBuffer);
+        console.log('Uploading file to Dropbox:', fileName);
 
         const dropboxResponse = await uploadToDropbox(fileBuffer, fileName);
         res.status(200).send(dropboxResponse);
