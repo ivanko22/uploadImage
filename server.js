@@ -52,8 +52,12 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
+    const uploadDir = path.join(__dirname, 'temp', req.file.originalname);
+
+    fs.writeFileSync(uploadDir, req.file.buffer);
 
     console.log('Received file:', req.file);
+    console.log('File saved to:', uploadDir);
 
     if (!req.file) {
         console.error('No file uploaded');
@@ -61,20 +65,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       }
   
 
-    const uploadDir = path.join(__dirname, 'uploads');
-    
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-    }
+    // const uploadDir = path.join(__dirname, 'uploads');
 
-    const filePath = path.join(uploadDir, req.file.originalname);
+    // if (!fs.existsSync(uploadDir)) {
+    //     fs.mkdirSync(uploadDir);
+    // }
+
+    // const filePath = path.join(uploadDir, req.file.originalname);
 
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
         console.log('filePath:', filePath);
 
-        fs.writeFileSync(filePath, req.file.buffer);
-        const response = await uploadToDropbox(filePath);
+        // fs.writeFileSync(filePath, req.file.buffer);
+        const response = await uploadToDropbox(uploadDir);
         res.send(response);
     } catch (error) {
         console.error('Error during upload:', error);
