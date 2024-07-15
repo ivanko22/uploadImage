@@ -7,6 +7,8 @@ const path = require('path');
 
 const accessToken = process.env.ACCESS_TOKEN;
 
+console.log('ACCESS_TOKEN:', accessToken);
+
 if(!accessToken){
     console.error('ACCESS_TOKEN is required');
     process.exit(1);
@@ -22,7 +24,7 @@ const upload = multer({ storage: multerStorage });
 const uploadToDropbox = async (filePath) => {
     console.log('Uploading file to Dropbox:', filePath);
 
-    const fileName = path.basename(filePath);
+    const fileName = path.basename(`${filePath}.jpg`);
     const fileData = fs.readFileSync(filePath);
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
@@ -56,7 +58,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
-        console.log('filePath:', tempFilePath);
 
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir);
