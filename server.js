@@ -8,6 +8,8 @@ const path = require('path');
 const accessToken = process.env.ACCESS_TOKEN;
 console.log('ACCESS_TOKEN:', accessToken);
 
+console.log('All Environment Variables:', process.env); // Add this line
+
 if (!accessToken) {
     console.error('ACCESS_TOKEN is required');
     process.exit(1);
@@ -19,7 +21,7 @@ const port = process.env.PORT || 8080;
 // Set storage engine
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadPath = '/tmp/uploads';
+      const uploadPath = '/tmp';
       fs.mkdirSync(uploadPath, { recursive: true });
       cb(null, uploadPath);
     },
