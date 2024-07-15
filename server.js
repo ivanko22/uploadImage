@@ -2,13 +2,10 @@ const express = require('express');
 require('dotenv').config();
 const multer = require('multer');
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const stream = require('stream');
 
 const accessToken = process.env.ACCESS_TOKEN;
 console.log('ACCESS_TOKEN:', accessToken);
-
-console.log('All Environment Variables:', process.env); // Add this line
 
 if (!accessToken) {
     console.error('ACCESS_TOKEN is required');
@@ -18,23 +15,12 @@ if (!accessToken) {
 const app = express();
 const port = process.env.PORT || 8080;
 
-// Set storage engine
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadPath = '/tmp';
-      fs.mkdirSync(uploadPath, { recursive: true });
-      cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-      cb(null, file.originalname);
-    }
-  });
-  
-// Init upload
+// Set up multer to handle file uploads
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-  
-const uploadToDropbox = async (fileBuffer, fileName) => {
-    console.log('uploadToDropbox file to Dropbox:', fileName);
+
+const uploadToDropbox = async (fileStream, fileName) => {
+    console.log('Uploading file to Dropbox:', fileName);
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
@@ -49,7 +35,7 @@ const uploadToDropbox = async (fileBuffer, fileName) => {
     };
 
     try {
-        const response = await axios.post(url, fileBuffer, { headers });
+        const response = await axios.post(url, fileStream, { headers });
         console.log('File uploaded to Dropbox:', response.data);
         return response.data;
     } catch (error) {
@@ -67,14 +53,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     try {
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
-
         const fileName = req.file.originalname;
-        const fileBuffer = fs.readFileSync(req.file.path);
+        const fileStream = new stream.PassThrough();
+        fileStream.end(req.file.buffer);
 
         console.log('Uploading file to Dropbox:', fileName);
 
-        const dropboxResponse = await uploadToDropbox(fileBuffer, fileName);
+        const dropboxResponse = await uploadToDropbox(fileStream, fileName);
         res.status(200).send(dropboxResponse);
     } catch (error) {
         console.error('Error during upload process:', error);
