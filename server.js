@@ -2,9 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const multer = require('multer');
 const axios = require('axios');
-const fs = require('fs');
 const path = require('path');
-const os = require('os');
 
 const accessToken = process.env.ACCESS_TOKEN;
 console.log('ACCESS_TOKEN:', accessToken);
@@ -20,11 +18,8 @@ const port = process.env.PORT || 8080;
 const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
 
-const uploadToDropbox = async (filePath) => {
-    console.log('uploadToDropbox file to Dropbox:', filePath);
-
-    const fileName = path.basename(`${filePath}.jpg`);
-    const fileData = fs.readFileSync(filePath);
+const uploadToDropbox = async (fileBuffer, fileName) => {
+    console.log('uploadToDropbox file to Dropbox:', fileName);
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
@@ -39,7 +34,7 @@ const uploadToDropbox = async (filePath) => {
     };
 
     try {
-        const response = await axios.post(url, fileData, { headers });
+        const response = await axios.post(url, fileBuffer, { headers });
         console.log('File uploaded to Dropbox:', response.data);
         return response.data;
     } catch (error) {
@@ -49,9 +44,6 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, req.file.originalname);
-
     console.log('Received file:', req.file);
 
     if (!req.file) {
@@ -62,23 +54,14 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
 
-        // Save the file to the temp directory
-        fs.writeFileSync(tempFilePath, req.file.buffer);
-        console.log('File saved to:', tempFilePath);
+        const fileName = req.file.originalname;
+        const fileBuffer = req.file.buffer;
 
-        const dropboxResponse = await uploadToDropbox(tempFilePath);
+        const dropboxResponse = await uploadToDropbox(fileBuffer, fileName);
         res.status(200).send(dropboxResponse);
     } catch (error) {
         console.error('Error during upload process:', error);
         res.status(500).json({ error: 'Internal server error' });
-    } finally {
-        if (fs.existsSync(tempFilePath)) {
-            try {
-                fs.unlinkSync(tempFilePath);
-            } catch (unlinkError) {
-                console.error('Error deleting file:', unlinkError);
-            }
-        }
     }
 });
 
