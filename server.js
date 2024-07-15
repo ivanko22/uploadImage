@@ -5,6 +5,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
+
 const accessToken = process.env.ACCESS_TOKEN;
 console.log('ACCESS_TOKEN:', accessToken);
 
@@ -48,7 +49,9 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-    const tempDir = path.join(__dirname, 'temp');
+    const os = require('os');
+
+    const tempDir = path.join(os.tmpdir(), 'uploads');
     const tempFilePath = path.join(tempDir, req.file.originalname);
 
     console.log('Received file:', req.file);
@@ -65,9 +68,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
 
-        if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir);
-        }
         // Save the file to the temp directory
         fs.writeFileSync(tempFilePath, req.file.buffer);
         console.log('tempFilePath', tempFilePath);
