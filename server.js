@@ -4,6 +4,7 @@ const multer = require('multer');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const e = require('express');
 
 const accessToken = process.env.ACCESS_TOKEN;
 
@@ -18,23 +19,13 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 const multerStorage = multer.memoryStorage();
-
 const upload = multer({ storage: multerStorage });
-
-
 
 const uploadToDropbox = async (filePath) => {
     console.log('uploadToDropbox file to Dropbox:', filePath);
 
     const fileName = path.basename(`${filePath}.jpg`);
     const fileData = fs.readFileSync(filePath);
-
-    // try {
-    //     fileData = fs.readFileSync(filePath);
-    // } catch (readError) {
-    //     console.error(`Error reading file at ${filePath}:`, readError); 
-    //     throw readError;
-    // }
 
     const url = `https://content.dropboxapi.com/2/files/upload`;
     const headers = {
@@ -64,6 +55,14 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     console.log('Received file:', req.file);
     console.log('File saved to:', tempDir, tempFilePath);
+
+    //check if file exists
+    if (req.file){
+        console.log('File uploaded', req.file.originalname);
+        res.send('File upload successfully');
+    }else{
+        console.error('No file uploaded');
+        res.status(404).send('No file uploaded');
 
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
