@@ -61,7 +61,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const filePath = path.join(uploadDir, req.file.originalname);
 
     try {
-        console.log('Request body:', req.body);
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        console.log('filePath:', filePath);
 
         fs.writeFileSync(filePath, req.file.buffer);
         const response = await uploadToDropbox(filePath);
