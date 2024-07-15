@@ -65,15 +65,21 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         
         fs.writeFileSync(tempFilePath, req.file.buffer);
 
+        console.log('Uploading file to Dropbox:', tempFilePath);
+
         const response = await uploadToDropbox(tempFilePath);
         res.send(response);
     } catch (error) {
         console.error('Error during upload:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to upload file to Dropbox' });
     }finally{
         if(fs.existsSync(tempFilePath)){
+            try{
             fs.unlinkSync(tempFilePath)
+        }catch(unlinkError){
+            console.error('Error deleting file:', unlinkError);
         }
+    }
     }
     });
 
