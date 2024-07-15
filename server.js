@@ -1,5 +1,5 @@
 const express = require('express');
-const { Storage } = require('@google-cloud/storage');
+// const { Storage } = require('@google-cloud/storage');
 require('dotenv').config();
 const multer = require('multer');
 const axios = require('axios');
@@ -16,8 +16,8 @@ if(!accessToken){
 const app = express();
 const port = process.env.PORT || 8080;
 
-const storage = new Storage();
-const bucket = storage.bucket('images');
+// const storage = new Storage();
+// const bucket = storage.bucket('images');
 
 const multerStorage = multer.memoryStorage();
 
@@ -52,33 +52,31 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-    const uploadDir = path.join(__dirname, 'temp', req.file.originalname);
-
-    fs.writeFileSync(uploadDir, req.file.buffer);
+    const tempdDir = path.join(__dirname, 'temp');
+    const tempFilePath = path.join(tempDir, req.file.originalname);
 
     console.log('Received file:', req.file);
-    console.log('File saved to:', uploadDir);
+    console.log('File saved to:', tempdDir, tempFilePath);
 
-    if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(400).json({ error: 'File is required' });
-      }
+    // if (!req.file) {
+    //     console.error('No file uploaded');
+    //     return res.status(400).json({ error: 'File is required' });
+    //   }
   
-
     // const uploadDir = path.join(__dirname, 'uploads');
-
-    // if (!fs.existsSync(uploadDir)) {
-    //     fs.mkdirSync(uploadDir);
-    // }
-
     // const filePath = path.join(uploadDir, req.file.originalname);
 
     try {
         console.log('Request body:', JSON.stringify(req.body, null, 2));
-        console.log('filePath:', filePath);
+        console.log('filePath:', tempFilePath);
 
-        // fs.writeFileSync(filePath, req.file.buffer);
-        const response = await uploadToDropbox(uploadDir);
+        if (!fs.existsSync(tempdDir)) {
+            fs.mkdirSync(tempdDir);
+        }
+        
+        fs.writeFileSync(tempFilePath, req.file.buffer);
+
+        const response = await uploadToDropbox(tempFilePath);
         res.send(response);
     } catch (error) {
         console.error('Error during upload:', error);
