@@ -8,6 +8,11 @@ const path = require('path');
 
 const accessToken = process.env.ACCESS_TOKEN;
 
+if(!accessToken){
+    console.error('ACCESS_TOKEN is required');
+    process.exit(1);
+}
+
 const app = express();
 const port = process.env.PORT || 8080;
 
