@@ -15,9 +15,21 @@ if (!accessToken) {
 const app = express();
 const port = process.env.PORT || 8080;
 
-const multerStorage = multer.memoryStorage();
-const upload = multer({ storage: multerStorage });
-
+// Set storage engine
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = '/tmp/uploads';
+      fs.mkdirSync(uploadPath, { recursive: true });
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    }
+  });
+  
+// Init upload
+const upload = multer({ storage: storage });
+  
 const uploadToDropbox = async (fileBuffer, fileName) => {
     console.log('uploadToDropbox file to Dropbox:', fileName);
 
