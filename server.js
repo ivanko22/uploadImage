@@ -19,6 +19,8 @@ const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
 
 const uploadToDropbox = async (filePath) => {
+    console.log('Uploading file to Dropbox:', filePath);
+
     const fileName = path.basename(filePath);
     const fileData = fs.readFileSync(filePath);
 
@@ -45,13 +47,14 @@ const uploadToDropbox = async (filePath) => {
 };
 
 app.post('/upload', upload.single('file'), async (req, res) => {
+
+    console.log('Received file:', req.file);
+
     if (!req.file) {
         console.error('No file uploaded');
         return res.status(400).json({ error: 'File is required' });
       }
   
-      // Log the request file information for debugging purposes
-    console.log('Received file:', req.file);
 
     const uploadDir = path.join(__dirname, 'uploads');
     if (!fs.existsSync(uploadDir)) {
