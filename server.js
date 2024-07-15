@@ -57,6 +57,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         const fileName = req.file.originalname;
         const fileBuffer = req.file.buffer;
 
+        console.log('Uploading file to Dropbox:', fileName, fileBuffer);
+
         const dropboxResponse = await uploadToDropbox(fileBuffer, fileName);
         res.status(200).send(dropboxResponse);
     } catch (error) {
