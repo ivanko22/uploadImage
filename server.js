@@ -62,6 +62,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   
 
     const uploadDir = path.join(__dirname, 'uploads');
+    
     if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir);
     }
